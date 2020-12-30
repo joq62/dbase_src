@@ -1,0 +1,11 @@
+-record(log,
+	{
+	  severity,
+	  vm,
+	  module,
+	  line,
+	  date,
+	  time,
+	  datetime,
+	  text
+	}).
