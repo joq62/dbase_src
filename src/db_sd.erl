@@ -10,6 +10,7 @@
 
 %Start Special 
 
+
 active_apps()->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
     [AppId||{?RECORD,_ServiceId,_ServiceVsn,AppId,_AppVsn,_HostId,_VmId,_Vm}<-Z].
@@ -50,6 +51,7 @@ create_table(NodeList)->
 create({?MODULE,ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm}) ->
     create(ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm).
 create(ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm) ->
+    TimeStamp=erlang:system_time(seconds),
     Record=#?RECORD{service_id=ServiceId,
 		    service_vsn=ServiceVsn,
 		    app_id=AppId,
@@ -57,14 +59,41 @@ create(ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm) ->
 		    host_id=HostId,
 		    vm_id=VmId,
 		    vm_dir=VmDir,
-		    vm=Vm 
+		    vm=Vm,
+		    time_stamp=TimeStamp
 		   },
     F = fun() -> mnesia:write(Record) end,
     mnesia:transaction(F).
 
+
+remove_orphanes(
+
+heartbeat(Service,Node)->
+    ServiceId=atom_to_list(Service),
+    F=fun()->
+	      SdRecordList=do(qlc:q([X || X <- mnesia:table(?TABLE),
+					  X#?RECORD.service_id==ServiceId,
+					  X#?RECORD.vm==Node])),
+	      case SdRecordList of
+		  []->
+		      mnesia:abort({error,[eexists,Service,Node]});
+		  [SdInfo] ->
+		      NewSdInfo=SdInfo#?RECORD{time_stamp=erlang:system_time(seconds)},
+		      mnesia:delete_object(SdInfo),
+		      mnesia:write(NewSdInfo);
+		  Reason->
+		      mnesia:abort({error,[Reason,Service,Node]})
+	      end 
+      end,
+    mnesia:transaction(F).
+
+read_all_info() ->
+    Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
+    [{ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,TimeStamp}||{?RECORD,ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,TimeStamp}<-Z].
+
 read_all() ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
-    [{ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm}||{?RECORD,ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm}<-Z].
+    [{ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm}||{?RECORD,ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,_}<-Z].
 
 
 
@@ -77,7 +106,7 @@ read(ServiceId,ServiceVsn) ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.service_id==ServiceId,
 		     X#?RECORD.service_vsn==ServiceVsn])),
-    [{QServiceId,QServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm}||{?RECORD,QServiceId,QServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm}<-Z].
+    [{QServiceId,QServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm}||{?RECORD,QServiceId,QServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,_}<-Z].
 
 delete(Id,Vsn,Vm) ->
     F = fun() -> 

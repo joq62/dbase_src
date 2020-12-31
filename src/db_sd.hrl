@@ -8,5 +8,6 @@
 	 host_id,
 	 vm_id,
 	 vm_dir,
-	 vm
+	 vm,
+	 time_stamp
 	}).

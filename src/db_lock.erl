@@ -51,7 +51,7 @@ is_open(LockId,LockTimeOut)->
     F=fun()->
 	      case mnesia:read({?TABLE,LockId}) of
 		  []->
-		      mnesia:abort(LockId);
+		      mnesia:abort([]);
 		  [LockInfo] ->
 		      CurrentTime=erlang:system_time(seconds),
 		      LockTime=LockInfo#?RECORD.time,
