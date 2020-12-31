@@ -8,6 +8,8 @@
 -define(TABLE,sd).
 -define(RECORD,sd).
 
+-define(DeltatT, 3*30). %% 90 sec 
+
 %Start Special 
 
 
@@ -65,9 +67,25 @@ create(ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm) ->
     F = fun() -> mnesia:write(Record) end,
     mnesia:transaction(F).
 
-
-remove_orphanes(
-
+remove_orphanes()->
+    remove_orphanes(?DeltatT).
+remove_orphanes(DeltaT)->
+    Now=erlang:system_time(seconds),
+    F=fun()->
+	      ToBeRemoved=do(qlc:q([X || X <- mnesia:table(?TABLE),
+				       DeltaT<Now-X#?RECORD.time_stamp])),
+	      
+	      case ToBeRemoved of
+		  []->
+		      mnesia:abort(no_to_remove);
+		  ToBeRemoved ->
+		      [mnesia:delete_object(SdInfo)||SdInfo<-ToBeRemoved];
+		Reason->
+		    mnesia:abort({error,[Reason]})
+	    end 
+    end,
+    mnesia:transaction(F).
+  
 heartbeat(Service,Node)->
     ServiceId=atom_to_list(Service),
     F=fun()->

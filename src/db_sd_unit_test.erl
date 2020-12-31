@@ -80,6 +80,7 @@ setup()->
     ?assertEqual(true,2>erlang:system_time(seconds)-T1),
     ?assertEqual(true,2>erlang:system_time(seconds)-T2),
 
+    
     ok.
 
 %% --------------------------------------------------------------------
@@ -120,4 +121,8 @@ sd_test_1()->
 
     ?assertEqual(true,2>Now-T11),
     ?assertEqual(false,2>T21-Now),
+
+    ?assertEqual({atomic,[ok]},db_sd:remove_orphanes(2)),
+    ?assertMatch([{"s1","1.0.0","app1","1.0.0","host1","vm1","vmdir1",'vm1@host1',_}],
+		 db_sd:read_all_info()),
     ok.
