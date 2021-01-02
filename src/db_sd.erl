@@ -15,28 +15,28 @@
 
 active_apps()->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
-    [AppId||{?RECORD,_ServiceId,_ServiceVsn,AppId,_AppVsn,_HostId,_VmId,_Vm}<-Z].
+    [AppId||{?RECORD,_ServiceId,_ServiceVsn,AppId,_AppVsn,_HostId,_VmId,_Vm,_}<-Z].
 
 app_spec(AppId)->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.app_id==AppId])),
-    [{ServiceId,ServiceVsn,XAppId,XAppVsn,HostId,VmId,VmDir,Vm}||{?RECORD,ServiceId,ServiceVsn,XAppId,XAppVsn,HostId,VmId,VmDir,Vm}<-Z].
+    [{ServiceId,ServiceVsn,XAppId,XAppVsn,HostId,VmId,VmDir,Vm}||{?RECORD,ServiceId,ServiceVsn,XAppId,XAppVsn,HostId,VmId,VmDir,Vm,_}<-Z].
 
 host(HostId)->
      Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.host_id==HostId])),
-    [{ServiceId,ServiceVsn,AppId,AppVsn,XHostId,VmId,VmDir,Vm}||{?RECORD,ServiceId,ServiceVsn,AppId,AppVsn,XHostId,VmId,VmDir,Vm}<-Z].
+    [{ServiceId,ServiceVsn,AppId,AppVsn,XHostId,VmId,VmDir,Vm}||{?RECORD,ServiceId,ServiceVsn,AppId,AppVsn,XHostId,VmId,VmDir,Vm,_}<-Z].
 
 get(ServiceId)->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.service_id==ServiceId])),
-    [Vm||{?RECORD,_ServiceId,_ServiceVsn,_AppId,_AppVsn,_HostId,_VmId,_VmDir,Vm}<-Z].
+    [Vm||{?RECORD,_ServiceId,_ServiceVsn,_AppId,_AppVsn,_HostId,_VmId,_VmDir,Vm,_}<-Z].
 
 get(ServiceId,ServiceVsn) ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.service_id==ServiceId,
 		     X#?RECORD.service_vsn==ServiceVsn])),
-    [Vm||{?RECORD,_ServiceId,_ServiceVsn,_AppId,_AppVsn,_HostId,_VmId,_VmDir,Vm}<-Z].
+    [Vm||{?RECORD,_ServiceId,_ServiceVsn,_AppId,_AppVsn,_HostId,_VmId,_VmDir,Vm,_}<-Z].
 
 
 % End Special
@@ -118,7 +118,7 @@ read_all() ->
 read(ServiceId) ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.service_id==ServiceId])),
-    [{XServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,Vm}||{?RECORD,XServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,Vm}<-Z].
+    [{XServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,Vm}||{?RECORD,XServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,Vm,_}<-Z].
 
 read(ServiceId,ServiceVsn) ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
