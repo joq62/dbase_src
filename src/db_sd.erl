@@ -15,7 +15,7 @@
 
 active_apps()->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
-    [AppId||{?RECORD,_ServiceId,_ServiceVsn,AppId,_AppVsn,_HostId,_VmId,_Vm,_}<-Z].
+    [AppId||{?RECORD,_ServiceId,_ServiceVsn,AppId,_AppVsn,_HostId,_VmId,_VmDir,_Vm,_TimeStamp}<-Z].
 
 app_spec(AppId)->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
@@ -67,6 +67,12 @@ create(ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm) ->
     F = fun() -> mnesia:write(Record) end,
     mnesia:transaction(F).
 
+read_all_info() ->
+    Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
+    [{ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,TimeStamp}||{?RECORD,ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,TimeStamp}<-Z].
+
+
+
 remove_orphanes()->
     remove_orphanes(?DeltatT).
 remove_orphanes(DeltaT)->
@@ -105,9 +111,6 @@ heartbeat(Service,Node)->
       end,
     mnesia:transaction(F).
 
-read_all_info() ->
-    Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
-    [{ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,TimeStamp}||{?RECORD,ServiceId,ServiceVsn,AppId,AppVsn,HostId,VmId,VmDir,Vm,TimeStamp}<-Z].
 
 read_all() ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
