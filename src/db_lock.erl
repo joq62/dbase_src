@@ -18,8 +18,6 @@ create_table(NodeList)->
 				 {disc_copies,NodeList}]),
     mnesia:wait_for_tables([?TABLE], 20000).
 
-create(LockId)->
-    create(LockId,0).
 create({?MODULE,LockId}) ->
     create(LockId,0).
 create(LockId,Time) ->
