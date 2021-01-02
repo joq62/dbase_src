@@ -12,7 +12,7 @@
 
 all_app_specs()->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
-    [AppId||{?RECORD,AppId,_Vsn,_Directives,_Services}<-Z].
+    [AppId||{?RECORD,AppId,_Vsn,_Type,_Directives,_Services}<-Z].
 
 create_table()->
     mnesia:create_table(?TABLE, [{attributes, record_info(fields, ?RECORD)},
