@@ -24,7 +24,10 @@ create_table(NodeList)->
     mnesia:wait_for_tables([?TABLE], 20000).
 
 create({?MODULE,AppId,Vsn,Type,Directives,Services})->
-    create(AppId,Vsn,Type,Directives,Services).
+    create(AppId,Vsn,Type,Directives,Services);
+create(X) ->
+    io:format("X= ~p~n",[{X,?MODULE,?LINE}]),
+    X=glurk.
 create(AppId,Vsn,Type,Directives,Services)->
     Record=#?RECORD{ app_id=AppId,
 		     vsn=Vsn,
