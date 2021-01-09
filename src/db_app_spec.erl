@@ -23,36 +23,37 @@ create_table(NodeList)->
 				 {disc_copies,NodeList}]),
     mnesia:wait_for_tables([?TABLE], 20000).
 
-create({?MODULE,AppId,Vsn,Type,Directives,Services})->
-    create(AppId,Vsn,Type,Directives,Services);
+create({?MODULE,AppId,Vsn,Type,Directives,AppEnvs,Services})->
+    create(AppId,Vsn,Type,Directives,AppEnvs,Services);
 create(X) ->
     io:format("X= ~p~n",[{X,?MODULE,?LINE}]),
-    X=glurk.
-create(AppId,Vsn,Type,Directives,Services)->
+    X={error,["unmatched signal",X,?MODULE,?LINE]}.
+create(AppId,Vsn,Type,Directives,AppEnvs,Services)->
     Record=#?RECORD{ app_id=AppId,
 		     vsn=Vsn,
 		     type=Type,
 		     directives=Directives,
+		     app_env=AppEnvs,
 		     services=Services},
     F = fun() -> mnesia:write(Record) end,
     mnesia:transaction(F).
 
 read_all() ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE)])),
-    [{AppId,AppVsn,Type,Directives,Services}||{?RECORD,AppId,AppVsn,Type,Directives,Services}<-Z].
+    [{AppId,AppVsn,Type,Directives,AppEnvs,Services}||{?RECORD,AppId,AppVsn,Type,Directives,AppEnvs,Services}<-Z].
 
 
 
 read(AppId) ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		   X#?RECORD.app_id==AppId])),
-    [{XAppId,AppVsn,Type,Directives,Services}||{?RECORD,XAppId,AppVsn,Type,Directives,Services}<-Z].
+    [{XAppId,AppVsn,Type,Directives,AppEnvs,Services}||{?RECORD,XAppId,AppVsn,Type,Directives,AppEnvs,Services}<-Z].
 
 read(AppId,AppVsn) ->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.app_id==AppId,
 		     X#?RECORD.vsn==AppVsn])),
-    [{XAppId,XAppVsn,Type,Directives,Services}||{?RECORD,XAppId,XAppVsn,Type,Directives,Services}<-Z].
+    [{XAppId,XAppVsn,Type,Directives,AppEnvs,Services}||{?RECORD,XAppId,XAppVsn,Type,Directives,AppEnvs,Services}<-Z].
 
 delete(AppId,AppVsn) ->
 

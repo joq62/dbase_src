@@ -113,6 +113,12 @@ ping()->
 %% --------------------------------------------------------------------
 init([]) ->
     dbase_lib:start([]),
+    rpc:multicall(misc_oam:masters(),
+		  master_log,log,
+		  [["Starting gen server =", ?MODULE],
+		   node(),?MODULE,?LINE]),
+    timer:sleep(1),
+    
     {ok, #state{}}.
 
 %% --------------------------------------------------------------------

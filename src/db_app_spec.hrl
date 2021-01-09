@@ -4,5 +4,6 @@
 	 vsn,
 	 type,
 	 directives,
+	 app_env,
 	 services
 	}).
