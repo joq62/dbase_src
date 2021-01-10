@@ -11,7 +11,7 @@
 %%% 
 %%%     
 %%% -------------------------------------------------------------------
--module(dbase). 
+-module(dbase_unit_test). 
 
 -behaviour(gen_server).
 %% --------------------------------------------------------------------
@@ -35,12 +35,10 @@
 
 
 %% server interface
--export([init_table_info/1,
-	 add_node/1,
-	 delete_schema_file/0,
-	 load_textfile/2,
-	 load_textfile/1,
-	 ping/0	 
+-export([start_test/1 %test suits	 
+	]).
+
+-export([ping/0	 
 	]).
 
 
@@ -61,12 +59,10 @@
 %C="https://"++Uid++":"++Pwd++"@github.com/"++Uid++"/"++SId++".git".
 
 %% Asynchrounus Signals
-%boot_strap()->
- %   PortStr=atom_to_list(PortArg),
- %   Port=list_to_integer(PortStr),
-   % application:set_env([{boot_service,{port,Port}}]),
-%    application:start(boot_service).
-       
+start_test([TestConfig])->
+    io:format("TestConfig ~p~n",[file:consult(TestConfig)]),
+    application:start(?MODULE).
+
 %% Gen server function
 
 start()-> gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -74,20 +70,6 @@ stop()-> gen_server:call(?MODULE, {stop},infinity).
 
 
 %%----------------------------------------------------------------------
-init_table_info(Info)->
-    gen_server:call(?MODULE,{init_table_info,Info},infinity).
-
-add_node(Vm)->
-    gen_server:call(?MODULE,{add_node,Vm},infinity).
-
-delete_schema_file()->
-    gen_server:call(?MODULE,{delete_schema_file},infinity).
-
-load_textfile(Filename,Bin)->    
-    gen_server:call(?MODULE,{load_textfile,Filename,Bin},infinity).
-load_textfile(FileName)->    
-    gen_server:call(?MODULE,{load_textfile,FileName},infinity).
-    
 ping()->
     gen_server:call(?MODULE,{ping},infinity).
 
@@ -101,7 +83,8 @@ ping()->
 %% ====================================================================
 %% Server functions
 %% ====================================================================
-
+-define(TestSuit,[{dbase_init_test,start,[],3*5000}
+		 ]).
 %% --------------------------------------------------------------------
 %% Function: init/1
 %% Description: Initiates the server
@@ -112,14 +95,15 @@ ping()->
 %
 %% --------------------------------------------------------------------
 init([]) ->
-    dbase_lib:start([]),
-    rpc:multicall(misc_oam:masters(),
-		  sys_log,log,
-		  [["Starting gen server =", ?MODULE],
-		   node(),?MODULE,?LINE]),
-    timer:sleep(1),
-    
-    
+    {ok,_}=dbase:start(),
+    Result=[{rpc:call(node(),M,F,A,T),M,F,A}||{M,F,A,T}<-?TestSuit],
+    case [{R,M,F,A}||{R,M,F,A}<-Result,
+	 R/=ok] of
+	[]->
+	    io:format("~p~n",[{?MODULE_STRING++" Sucessfull Unit Test Result"}]);
+	_->
+	    io:format("~p~n",[{?MODULE_STRING++" Failed test ",Result}])
+    end,
     {ok, #state{}}.
 
 %% --------------------------------------------------------------------
@@ -135,30 +119,6 @@ init([]) ->
 
 handle_call({ping}, _From, State) ->
     Reply={pong,node(),?MODULE},
-    {reply, Reply, State};
-
-handle_call({add_node,Vm}, _From, State) ->
-    Reply=dbase_lib:add_node(Vm),
-    {reply, Reply, State};
-
-handle_call({init_table_info,Info}, _From, State) ->
-    Reply=dbase_lib:create_table(Info),
-    {reply, Reply, State};
-
-handle_call({delete_schema_file}, _From, State) ->
-    Reply=os:cmd("rm -rf Mne*"),
-    {reply, Reply, State};
-
-handle_call({load_textfile,FileName}, _From, State) ->
-    Reply=mnesia:load_textfile(FileName),
- %   file:delete(Filename),
-    {reply, Reply, State};
-
-handle_call({load_textfile,Filename,Bin}, _From, State) ->
-    file:delete(Filename),
-    ok=file:write_file(Filename,Bin),
-    Reply=mnesia:load_textfile(Filename),
- %   file:delete(Filename),
     {reply, Reply, State};
 
 

@@ -29,6 +29,7 @@ create(X) ->
     io:format("X= ~p~n",[{X,?MODULE,?LINE}]),
     X={error,["unmatched signal",X,?MODULE,?LINE]}.
 create(AppId,Vsn,Type,Directives,AppEnvs,Services)->
+  %  io:format("create(AppId,Vsn,Type,Directives,AppEnvs,Services) = ~p~n",[{AppId,Vsn,Type,Directives,AppEnvs,Services,?MODULE,?LINE}]),
     Record=#?RECORD{ app_id=AppId,
 		     vsn=Vsn,
 		     type=Type,
