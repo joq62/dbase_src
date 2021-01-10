@@ -24,7 +24,7 @@
 
 
 %% External exports
--export([start/1,
+-export([start/0,
 	 db_init/1,
 	 add_node/1,
 	 add_extra_nodes/1,
@@ -43,11 +43,19 @@
 %% Returns: non
 %% --------------------------------------------------------------------
 
-start(Nodes)->
+start()->
     mnesia:stop(),
     mnesia:delete_schema([node()]),
     mnesia:start(),
+   
+    %% Check if there dbase nodes are running
+    {ok,DbaseNodes}=application:get_env(dbase,dbase_nodes),
+    PingResult=[rpc:call(DbaseNode,dbase,ping,[])||DbaseNode<-DbaseNodes],
+    io:format("Line + PingResult = ~p~n",[{?MODULE,?LINE,PingResult}]),
+    Nodes=[Node||{pong,Node,_}<-PingResult],
+    io:format("Line + Nodes = ~p~n",[{?MODULE,?LINE,Nodes}]),
     db_init(lists:delete(node(), Nodes)).
+
 
 %% --------------------------------------------------------------------
 %% Function:start/0 
@@ -104,7 +112,7 @@ add_node(Vm)->
 %% --------------------------------------------------------------------
 
 db_init([])->
-    % Update with tables
+    % Singe Dbase no other running
     mnesia:create_table(server,[{attributes, record_info(fields, server)}]),
     mnesia:create_table(deployment,[{attributes, record_info(fields,deployment)}]),
     mnesia:create_table(deployment_spec,[{attributes, record_info(fields,deployment_spec)}]),
@@ -117,9 +125,15 @@ db_init([])->
 			    {type,bag}]),    
     mnesia:create_table(app_spec,[{attributes, record_info(fields,app_spec)}]),   
     mnesia:create_table(lock,[{attributes, record_info(fields,lock)}]),   
+
+    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
+    % Initiate from git
+    timer:sleep(1000),
+    config_lib:init_dbase(),
     ok;
 
-db_init(AllNodes)->
+db_init(AllNodes)-> 
+    % Other dbases are runnung - copy their dbases tables 
     io:format(" ~p~n",[{?MODULE,?LINE,AllNodes}]),
     add_extra_nodes(AllNodes).
 
@@ -148,6 +162,7 @@ add_extra_nodes([Node|T])->
 	    mnesia:add_table_copy(vm, node(), ram_copies),
 	    mnesia:add_table_copy(log, node(), ram_copies),
 	    mnesia:add_table_copy(app_spec, node(), ram_copies),
+	    mnesia:add_table_copy(lock, node(), ram_copies),
 	    Tables=mnesia:system_info(tables),
 	    mnesia:wait_for_tables(Tables,?WAIT_FOR_TABLES);
 	_ ->

@@ -53,15 +53,17 @@ start()->
 setup()->
    % start 3 nodes dbase0,1,2 as slaves
     {ok,HostId}=net:gethostname(),
-    Args="-setcookie abc", 
+    Args="-pa ebin -setcookie abc", 
     {ok,Dbase0}=slave:start(HostId,dbase0,Args),
     {ok,Dbase1}=slave:start(HostId,dbase1,Args),
     {ok,Dbase2}=slave:start(HostId,dbase2,Args),
 
+    Dbases=[Dbase0,Dbase1,Dbase2],
     Date=date(),
     ?assertMatch(Date,rpc:call(Dbase0,erlang,date,[])),
     ?assertMatch(Date,rpc:call(Dbase1,erlang,date,[])),
     ?assertMatch(Date,rpc:call(Dbase2,erlang,date,[])),
+
     ok.
 
 %% --------------------------------------------------------------------

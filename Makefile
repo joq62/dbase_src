@@ -12,12 +12,26 @@ all:
 	echo Done
 doc_gen:
 	echo glurk not implemented
+log_terminal:
+	rm -rf test_ebin/* src/*.beam *.beam;
+	rm -rf  *~ */*~  erl_cra*;
+#	common
+	erlc -o test_ebin ../common_src/src/*.erl;
+	erlc -o test_ebin ../terminal_src/src/terminal.erl;
+	erl -pa test_ebin -s terminal start -sname log_terminal -setcookie abc
+alert_ticket_terminal:
+#	common
+	erlc -o test_ebin ../common_src/src/*.erl;
+	erlc -o test_ebin ../terminal_src/src/terminal.erl;
+	erl -pa test_ebin -s terminal start -sname alert_ticket_terminal -setcookie abc
 test:
 	rm -rf ebin/* src/*.beam *.beam test_src/*.beam test_ebin/*;
 	rm -rf  *~ */*~  erl_cra*;
 	rm -rf *_specs *_config *.log;
 #	Common service
 	erlc -o ebin ../../services/common_src/src/*.erl;
+#	Common log
+	erlc -o ebin ../../services/log_src/src/*.erl;
 #	service
 	erlc -o ebin src/*.erl;
 #	test application

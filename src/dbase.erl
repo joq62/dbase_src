@@ -112,7 +112,14 @@ ping()->
 %
 %% --------------------------------------------------------------------
 init([]) ->
-    dbase_lib:start([]),
+    
+    % If ther are no other dbases do initial start 
+    
+
+    %If other dbases are running just start and update 
+    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
+    dbase_lib:start(),
+    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
     rpc:multicall(misc_oam:masters(),
 		  sys_log,log,
 		  [["Starting gen server =", ?MODULE],

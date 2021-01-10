@@ -31,6 +31,10 @@ start()->
     ?assertEqual(ok,setup()),
     ?debugMsg("stop setup"),
 
+    ?debugMsg("Start single_node"),
+    ?assertEqual(ok,single_node()),
+    ?debugMsg("stop single_node"),
+    
     ?debugMsg("Start lock_test_1"),
     ?assertEqual(ok,lock_test_1()),
     ?debugMsg("stop lock_test_1"),
@@ -51,10 +55,9 @@ start()->
 %% Returns: non
 %% --------------------------------------------------------------------
 setup()->
-    ?assertMatch(ok,config_lib:init_dbase()),
-    timer:sleep(500),
+    ok.
 
-
+single_node()->
     AppSpecs=db_app_spec:read_all(),
     AppSpecsId=[AppId||{AppId,_AppVsn,_Type,_Directives,_AppEnvs,_Services}<-AppSpecs],
 
@@ -91,14 +94,7 @@ setup()->
 		  {"c0","joq62","festum01","192.168.0.200",22,not_available}],
 		 Servers),
     
-    
-						%   io:format("AppSpecsId ~p~n",[AppSpecsId]),
-						%    io:format("ServicesSpecsId ~p~n",[ServicesSpecsId]),
-						%   io:format("PassWd ~p~n",[PassWd]),
-  %  io:format("Servers ~p~n",[Servers]),
-  %  io:format("Sd ~p~n",[]),
-    
-    ok.
+     ok.
 
 %% --------------------------------------------------------------------
 %% Function:start/0 

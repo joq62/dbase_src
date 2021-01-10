@@ -31,6 +31,7 @@
 %% External functions
 %% ====================================================================
 init_dbase()->
+     io:format("Line + application:get_all_env  = ~p~n",[{?MODULE,?LINE, application:get_all_env()}]),
     {ok,GitUser}=application:get_env(git_user),
     {ok,GitPassWd}=application:get_env(git_pw),
     {ok,ClusterConfigDir}=application:get_env(cl_dir),
@@ -40,8 +41,11 @@ init_dbase()->
   
  
     ok=load_app_specs(AppSpecsDir,GitUser,GitPassWd),
+    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
     ok=load_service_specs(ServiceSpecsDir,GitUser,GitPassWd),
+    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
     ok=load_cluster_config(ClusterConfigDir,ClusterConfigFileName,GitUser,GitPassWd),
+    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
     ok.
 
 %% --------------------------------------------------------------------
@@ -76,12 +80,14 @@ load_app_specs(AppSpecDir,GitUser,GitPassWd)->
 	       {ok,FileNames}->
 		   SpecFileNames=[filename:join(AppSpecDir,FileName)||FileName<-FileNames,
 					       ".app_spec"==filename:extension(FileName)],
-	%	   io:format("SpecFileNames= ~p~n",[{SpecFileNames,?MODULE,?LINE}]),
+		   io:format("SpecFileNames= ~p~n",[{SpecFileNames,?MODULE,?LINE}]),
 		   L1=[file:consult(FileName)||FileName<-SpecFileNames],
-	%	   io:format("Info= ~p~n",[{L1,?MODULE,?LINE}]),
+		   io:format("Info= ~p~n",[{L1,?MODULE,?LINE}]),
 		   L2=[Info||{ok,[Info]}<-L1],
-		  
-		   DbaseResult=[R||R<-dbase:init_table_info(L2),
+		   
+		  % DbaseResult=[R||R<-dbase:init_table_info(L2),
+		%		   R/={atomic,ok}],
+		   DbaseResult=[R||R<-dbase_lib:create_table(L2),
 				   R/={atomic,ok}],
 		   case DbaseResult of
 			[]->
@@ -129,7 +135,7 @@ load_service_specs(SpecDir,GitUser,GitPassWd)->
 								   ".service_spec"==filename:extension(FileName)],
 		   L1=[file:consult(FileName)||FileName<-SpecFileNames],
 		   L2=[Info||{ok,[Info]}<-L1],
-		   L3=dbase:init_table_info(L2),
+		   L3=dbase_lib:create_table(L2),
 		   DbaseResult=[R||R<-L3,
 				   R/={atomic,ok}],
 		   
@@ -157,7 +163,7 @@ load_cluster_config(ClusterConfigDir,ClusterConfigFileName,GitUser,GitPassWd)->
     os:cmd(GitCmd),
     ConfigFilePath=filename:join([".",ClusterConfigDir,ClusterConfigFileName]),
     {ok,Info}=file:consult(ConfigFilePath),
-    rpc:call(node(),dbase,init_table_info,[Info]),
+    dbase_lib:create_table(Info),
     ok.
     
     
