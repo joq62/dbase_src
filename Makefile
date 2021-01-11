@@ -6,7 +6,7 @@ all:
 #	test application
 	cp test_src/*.app test_ebin;
 	erlc -o test_ebin test_src/*.erl;
-	rm -rf ebin/* src/*.beam *.beam  test_src/*.beam test_ebin/*;
+	rm -rf db*/* ebin/* src/*.beam *.beam  test_src/*.beam test_ebin/*;
 	rm -rf  *~ */*~  erl_cra*;
 	rm -rf *_specs *_config *.log;
 	echo Done
@@ -25,14 +25,26 @@ alert_ticket_terminal:
 	erlc -o test_ebin ../terminal_src/src/terminal.erl;
 	erl -pa test_ebin -s terminal start -sname alert_ticket_terminal -setcookie abc
 test:
-	rm -rf ebin/* src/*.beam *.beam test_src/*.beam test_ebin/*;
+	rm -rf db*/* ebin/* src/*.beam *.beam test_src/*.beam test_ebin/*;
 	rm -rf  *~ */*~  erl_cra*;
 	rm -rf *_specs *_config *.log;
 #	Common service
 	erlc -o ebin ../../services/common_src/src/*.erl;
+	erlc -o db0 ../../services/common_src/src/*.erl;
+	erlc -o db1 ../../services/common_src/src/*.erl;
+	erlc -o db2 ../../services/common_src/src/*.erl;
 #	Common log
 	erlc -o ebin ../../services/log_src/src/*.erl;
 #	service
+	cp test_src/dbase.app db0;
+	cp test_src/dbase.app db1;
+	cp test_src/dbase.app db2;
+	erlc -o db0 src/*.erl;
+	erlc -o db1 src/*.erl;
+	erlc -o db2 src/*.erl;
+	erlc -o db0 test_src/*.erl;
+	erlc -o db1 test_src/*.erl;
+	erlc -o db2 test_src/*.erl;
 	erlc -o ebin src/*.erl;
 #	test application
 	cp test_src/*.app test_ebin;

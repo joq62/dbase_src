@@ -35,6 +35,9 @@
 
 
 %% server interface
+
+-export([glurk/0]).
+
 -export([init_table_info/1,
 	 add_node/1,
 	 delete_schema_file/0,
@@ -58,6 +61,8 @@
 %% External functions
 %% ====================================================================
 
+glurk()->
+    {ok,node(),?MODULE,?LINE}.
 %C="https://"++Uid++":"++Pwd++"@github.com/"++Uid++"/"++SId++".git".
 
 %% Asynchrounus Signals
@@ -112,20 +117,14 @@ ping()->
 %
 %% --------------------------------------------------------------------
 init([]) ->
+    misc_log:msg(log,
+		["Init gen server =", ?MODULE, node()],
+		node(),?MODULE,?LINE),
+    dbase_lib:start(),    
     
-    % If ther are no other dbases do initial start 
-    
-
-    %If other dbases are running just start and update 
-    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
-    dbase_lib:start(),
-    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
-    rpc:multicall(misc_oam:masters(),
-		  sys_log,log,
-		  [["Starting gen server =", ?MODULE],
-		   node(),?MODULE,?LINE]),
-    timer:sleep(1),
-    
+    misc_log:msg(log,
+		["Start gen server =", ?MODULE, node()],
+		node(),?MODULE,?LINE),
     
     {ok, #state{}}.
 

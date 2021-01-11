@@ -83,8 +83,8 @@ ping()->
 %% ====================================================================
 %% Server functions
 %% ====================================================================
--define(TestSuit,[{dbase_init_test,start,[],5*5000}%%%%%,
-	%	  {dbase_cluster_test,start,[],3*5000}
+-define(TestSuit,[{dbase_init_test,start,[],5*5000},
+		  {dbase_cluster_test,start,[],5*5000}
 		 ]).
 %% --------------------------------------------------------------------
 %% Function: init/1
@@ -98,7 +98,7 @@ ping()->
 init([]) ->
     {ok,_}=sys_log:start(),
     ?assertMatch(ok,
-		  sys_log:msg([node()],log,
+		  sys_log:msg(misc_oam:masters(),log,
 			  ["Starting gen server =", ?MODULE],
 			  ?MODULE,?LINE)),
 
@@ -114,7 +114,7 @@ init([]) ->
     DbaseNodes=[list_to_atom(VmId++"@"++HostId)||VmId<-DbaseVmIdTest],
     application:set_env(dbase_unit_test,dbase_nodes,DbaseNodes),
 
-    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
+%    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
     
     % Start a Dbase application 
     application:set_env(dbase,dbase_nodes,DbaseNodes),
@@ -124,16 +124,12 @@ init([]) ->
     application:set_env(dbase,cl_file,ClFile),
     application:set_env(dbase,app_specs_dir,AppSpecsDir),
     application:set_env(dbase,service_specs_dir,ServiceSpecsDir),
-    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
-    
-    ok=rpc:call(node(),application,start,[dbase],5*5000),
-    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
-    
-    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
+   
+    ok=rpc:call(node(),application,start,[dbase],2*5000),
     ?assertMatch(ok,
-		 sys_log:msg([node()],log,
+		 sys_log:msg(misc_oam:masters(),log,
 			     ["Start Test suit in =", ?MODULE],
-			  ?MODULE,?LINE)),
+			     ?MODULE,?LINE)),
     
     % Testcases
     Result=[{rpc:call(node(),M,F,A,T),M,F,A}||{M,F,A,T}<-?TestSuit],

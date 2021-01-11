@@ -44,16 +44,25 @@
 %% --------------------------------------------------------------------
 
 start()->
+    misc_log:msg(log,
+		["Line ="],
+		 node(),?MODULE,?LINE),
     mnesia:stop(),
     mnesia:delete_schema([node()]),
     mnesia:start(),
    
     %% Check if there dbase nodes are running
     {ok,DbaseNodes}=application:get_env(dbase,dbase_nodes),
-    PingResult=[rpc:call(DbaseNode,dbase,ping,[])||DbaseNode<-DbaseNodes],
-    io:format("Line + PingResult = ~p~n",[{?MODULE,?LINE,PingResult}]),
+    PingResult=[rpc:call(DbaseNode,dbase,ping,[])||DbaseNode<-lists:delete(node(),DbaseNodes)],
+    misc_log:msg(log,
+		["PingResult ",PingResult],
+		 node(),?MODULE,?LINE),
+   
     Nodes=[Node||{pong,Node,_}<-PingResult],
-    io:format("Line + Nodes = ~p~n",[{?MODULE,?LINE,Nodes}]),
+    misc_log:msg(log,
+		 ["Nodes ",Nodes],
+		 node(),?MODULE,?LINE),
+    
     db_init(lists:delete(node(), Nodes)).
 
 
@@ -83,7 +92,7 @@ create_table([L|T],Acc)->
 %% --------------------------------------------------------------------
 
 add_node(Vm)->
-    io:format(" ~p~n",[{?MODULE,?LINE,Vm}]),
+    
     rpc:call(Vm,mnesia,stop,[]),
     mnesia:delete_schema([Vm]),
     ok=rpc:call(Vm,mnesia,start,[]),
@@ -126,15 +135,21 @@ db_init([])->
     mnesia:create_table(app_spec,[{attributes, record_info(fields,app_spec)}]),   
     mnesia:create_table(lock,[{attributes, record_info(fields,lock)}]),   
 
-    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
+   
     % Initiate from git
-    timer:sleep(1000),
+ 
     config_lib:init_dbase(),
+
+    misc_log:msg(log,
+		 ["Initiated mnesia in single mode"],
+		 node(),?MODULE,?LINE),
     ok;
 
 db_init(AllNodes)-> 
     % Other dbases are runnung - copy their dbases tables 
-    io:format(" ~p~n",[{?MODULE,?LINE,AllNodes}]),
+    misc_log:msg(log,
+		["Initiated mnesia ini existing cluster using nodes",AllNodes],
+		node(),?MODULE,?LINE),
     add_extra_nodes(AllNodes).
 
 %% --------------------------------------------------------------------
@@ -144,13 +159,14 @@ db_init(AllNodes)->
 %% --------------------------------------------------------------------
 
 add_extra_nodes([])->
-    io:format(" ~p~n",[{?MODULE,?LINE,[]}]),
     ok;
 add_extra_nodes([Node|T])->
-    io:format(" ~p~n",[{?MODULE,?LINE,Node,T}]),
+    misc_log:msg(log,
+		 ["add_extra_nodes",Node,T],
+		 node(),?MODULE,?LINE),
     case mnesia:change_config(extra_db_nodes, [Node]) of
 	{ok,[Node]}->
-	    io:format(" ~p~n",[{?MODULE,?LINE,Node}]),
+	 %   io:format(" ~p~n",[{?MODULE,?LINE,Node}]),
 	    mnesia:add_table_copy(schema, node(),ram_copies),
 	    % Update with tables
 	    mnesia:add_table_copy(server, node(), ram_copies),
@@ -166,6 +182,6 @@ add_extra_nodes([Node|T])->
 	    Tables=mnesia:system_info(tables),
 	    mnesia:wait_for_tables(Tables,?WAIT_FOR_TABLES);
 	_ ->
-	    io:format(" ~p~n",[{?MODULE,?LINE,node()}]),
+	%    io:format(" ~p~n",[{?MODULE,?LINE,node()}]),
 	    add_extra_nodes(T)
     end.
