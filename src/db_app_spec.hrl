@@ -1,9 +1,11 @@
 -record(app_spec,
 	{
 	 app_id,
-	 vsn,
+	 app_vsn,
 	 type,
-	 directives,
-	 app_env,
+	 host,
+	 vm_id,
+	 vm_dir,
+	 cookie,
 	 services
 	}).

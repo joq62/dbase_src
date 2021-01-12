@@ -55,6 +55,32 @@ start()->
 %% Returns: non
 %% --------------------------------------------------------------------
 setup()->
+
+    %% Test env vars 
+    {ok,DbaseVmIdTest}=application:get_env(dbase_vm_id),
+    {ok,GitUser}=application:get_env(git_user),
+    {ok,GitPw}=application:get_env(git_pw),
+    {ok,ClDir}=application:get_env(cl_dir),
+    {ok,ClFile}=application:get_env(cl_file),
+    {ok,AppSpecsDir}=application:get_env(app_specs_dir),
+    {ok,ServiceSpecsDir}=application:get_env(service_specs_dir),
+    {ok,HostId}=net:gethostname(),
+    DbaseNodes=[list_to_atom(VmId++"@"++HostId)||VmId<-DbaseVmIdTest],
+    application:set_env(dbase_unit_test,dbase_nodes,DbaseNodes),
+
+%    io:format("Line = ~p~n",[{?MODULE,?LINE}]),
+    
+    % Start a Dbase application 
+    application:set_env(dbase,dbase_nodes,DbaseNodes),
+    application:set_env(dbase,git_user,GitUser),
+    application:set_env(dbase,git_pw,GitPw),
+    application:set_env(dbase,cl_dir,ClDir),
+    application:set_env(dbase,cl_file,ClFile),
+    application:set_env(dbase,app_specs_dir,AppSpecsDir),
+    application:set_env(dbase,service_specs_dir,ServiceSpecsDir),
+   
+    ok=rpc:call(node(),application,start,[dbase],2*5000),
+
     ok.
 
 single_node()->
