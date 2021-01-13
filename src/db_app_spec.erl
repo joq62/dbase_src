@@ -74,6 +74,32 @@ services(AppId)->
     AllServices.
 
  % Assume only one service per application 
+service_id(AppId)->
+    Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
+		     X#?RECORD.app_id==AppId])),
+    [[AllServices|_]]=[Services||{?RECORD,_AppId,_AppVsn,_Type,_Host,_VmId,_VmDir,_Cookie,Services}<-Z],
+    
+    Result=case lists:keyfind(service_id,1,AllServices) of
+	       false->
+		   {error,[eexists,AppId,'or service_id']};
+	       {service_id,ServiceId} ->
+		   ServiceId
+	   end,
+    Result.
+service_vsn(AppId)->
+    Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
+		     X#?RECORD.app_id==AppId])),
+    [[AllServices|_]]=[Services||{?RECORD,_AppId,_AppVsn,_Type,_Host,_VmId,_VmDir,_Cookie,Services}<-Z],
+    
+    Result=case lists:keyfind(service_vsn,1,AllServices) of
+	       false->
+		   {error,[eexists,AppId,'or service_vsn']};
+	       {service_vsn,ServiceVsn} ->
+		   ServiceVsn
+	   end,
+    Result.
+
+
 git_path(AppId)->
     Z=do(qlc:q([X || X <- mnesia:table(?TABLE),
 		     X#?RECORD.app_id==AppId])),
