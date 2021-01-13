@@ -59,7 +59,7 @@ db_app_spec()->
     mnesia:start(), 
     mnesia:create_table(app_spec,[{attributes, record_info(fields,app_spec)}]),
     
-    {ok,[DbAppSpecInfo]}=file:consult("../../app_specs/a.org"),
+    {ok,[DbAppSpecInfo]}=file:consult("../../app_specs/dbase_100_c0.app_spec"),
     io:format("~p~n",[DbAppSpecInfo]), 
     %% create via file
     ?assertMatch({atomic,ok},db_app_spec:create(DbAppSpecInfo)),
