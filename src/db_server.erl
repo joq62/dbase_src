@@ -35,7 +35,7 @@ create_table(NodeList)->
     mnesia:wait_for_tables([?TABLE], 20000).
 
  
-create({db_server,HostId,SshId,SshPwd,IpAddr,Port,Status}) ->
+create([db_server,HostId,SshId,SshPwd,IpAddr,Port,Status]) ->
     create(HostId,SshId,SshPwd,IpAddr,Port,Status).
 
 create(HostId,SshId,SshPwd,IpAddr,Port,Status) ->

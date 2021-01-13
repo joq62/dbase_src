@@ -17,7 +17,7 @@ create_table(NodeList)->
 				 {disc_copies,NodeList}]),
     mnesia:wait_for_tables([?TABLE], 20000).
 
-create({?MODULE,Id,PassWd}) ->
+create([?MODULE,Id,PassWd]) ->
     create(Id,PassWd).
 create(Id,PassWd) ->
     Record=#?RECORD{user_id=Id,passwd=PassWd},

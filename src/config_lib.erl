@@ -37,12 +37,12 @@ init_dbase()->
     {ok,ClusterConfigDir}=application:get_env(cl_dir),
     {ok,ClusterConfigFileName}=application:get_env(cl_file),
     {ok,AppSpecsDir}=application:get_env(app_specs_dir),
-    {ok,ServiceSpecsDir}=application:get_env(service_specs_dir),
+    {ok,_ServiceSpecsDir}=application:get_env(service_specs_dir),
   
  
     ok=load_app_specs(AppSpecsDir,GitUser,GitPassWd),
     
-    ok=load_service_specs(ServiceSpecsDir,GitUser,GitPassWd),
+  %  ok=load_service_specs(ServiceSpecsDir,GitUser,GitPassWd),
  
     ok=load_cluster_config(ClusterConfigDir,ClusterConfigFileName,GitUser,GitPassWd),
  %   io:format("Line = ~p~n",[{?MODULE,?LINE}]),
@@ -80,10 +80,11 @@ load_app_specs(AppSpecDir,GitUser,GitPassWd)->
 	       {ok,FileNames}->
 		   SpecFileNames=[filename:join(AppSpecDir,FileName)||FileName<-FileNames,
 					       ".app_spec"==filename:extension(FileName)],
-	%	   io:format("SpecFileNames= ~p~n",[{SpecFileNames,?MODULE,?LINE}]),
+		%   io:format("SpecFileNames= ~p~n",[{SpecFileNames,?MODULE,?LINE}]),
 		   L1=[file:consult(FileName)||FileName<-SpecFileNames],
-	%	   io:format("Info= ~p~n",[{L1,?MODULE,?LINE}]),
+		%   io:format("Info= ~p~n",[{L1,?MODULE,?LINE}]),
 		   L2=[Info||{ok,[Info]}<-L1],
+	%	   io:format("Info= ~p~n",[{L2,?MODULE,?LINE}]),
 		   
 		  % DbaseResult=[R||R<-dbase:init_table_info(L2),
 		%		   R/={atomic,ok}],
