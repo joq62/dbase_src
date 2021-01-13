@@ -81,7 +81,7 @@ create_table([L|T],Acc)->
     [Module|_]=L,
    % Arg=list_to_tuple(L),
     Arg=L,
-    io:format("~p~n",[{?MODULE,?LINE,Module,create,Arg}]),
+%    io:format("~p~n",[{?MODULE,?LINE,Module,create,Arg}]),
     R=apply(Module,create,[Arg]),
     %io:format("~p~n",[{?MODULE,?LINE,Module,create,Arg}]),
 
